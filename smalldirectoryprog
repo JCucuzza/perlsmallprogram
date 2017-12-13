@@ -4,8 +4,8 @@ use 5.010;
 ###########################################
 # Author: Jonathan Cucuzza
 # Date: 12/7/2017
-# Project: Capstone
-###########################################
+# Project: Small Perl Program 
+############################################
 
 print  `clear`;
 
