@@ -1,0 +1,158 @@
+#!/usr/bin/perl -w
+use 5.010;
+
+###########################################
+# Author: Jonathan Cucuzza
+# Date: 12/7/2017
+# Project: Capstone
+###########################################
+
+print  `clear`;
+
+###########################################
+# Import file from command line, if nothing
+# imports create new file called data.text#
+##########################################
+$Filename = shift @ARGV;
+
+if(!open TEST  , $Filename){		
+	open NEW, '>', "data.text";
+	$Filename = "data.text";
+	close NEW;
+}
+close TEST;
+
+############################################
+# Menu options to open subroutines to the
+# users selected choice
+###########################################
+$line = "";
+do{
+	
+	say "Menu";
+        say "===========================";
+        say "(p, P) Print users info";
+        say "(a, A) Add new user";
+        say "(s, S) Search user";
+        say "(d, D) Delete user";
+        say "(x,X) Exit", "\n";
+	
+	print "Enter choice: ";
+	chomp($line = <STDIN>);
+		
+	given($line){
+		when($_ =~ /p/i){&display();}
+		when($_ =~ /a/i){&add();}
+		when($_ =~ /s/i){&search();}
+		when($_ =~ /d/i){&remove();}
+		when($_ =~ /x/i) { exit;}
+		default{say"Invalid input"}
+	}
+	
+}while($line !~ /x/i);
+
+############################################
+#
+#	Displays all content inside of file
+#
+###########################################
+sub display(){
+
+	if(!open DISPLAY, "<","$Filename"){die "($!)";}
+	my @names = sort <DISPLAY>;
+	foreach(@names)
+	{
+		chomp $_;
+		if(/(\w+):(\w+):(\w+)/)
+		{
+			say"\U$3\t$1\t$2";	
+		}
+	}
+	close DISPLAY;
+}
+
+##############################################
+#
+#	Adds a new user to the file
+#
+##############################################
+sub add(){
+
+	if(!open ADD, '>>', "$Filename"){ die "($!)";}
+
+	print "Enter users first name: ";
+	chomp($firstname = <STDIN>);
+	if($firstname =~ /^(.)/){$user = $&;}
+	
+	print "Enter users last name: ";
+	chomp($lastname = <STDIN>);
+	if($lastname =~ /^(....)/){$user .= $&;}
+	else {$user .= $lastname;} 
+	
+	if(!open READ, '<', "$Filename"){die"($!)";}
+ 	my $idnum = 0;
+	foreach(<READ>)
+	{
+		if(/$user/i)
+		{ 
+			$idnum++;
+
+		}
+	}
+	if($idnum > 0) {$user .= "$idnum"};
+
+	print ADD "$firstname:$lastname:$user\n";
+	say "User has been added";
+	close ADD;
+	close READ;
+}	
+
+##############################################
+#
+#	Search for users with given first name
+#
+##############################################
+sub search(){
+
+	if(! open SEARCH, '<', "$Filename"){die "($!)";}
+	print"Enter the users firstname that you would like to find: ";
+	chomp($find = <STDIN>);
+	$count = 0;
+	foreach(<SEARCH>)
+	{
+		if(/^$find\b/)
+		{	
+			if(/(\w+):(\w+):(\w+)/)
+			{
+			    say "$3\t$1\t$2";
+			}		
+			$count++;
+		}	
+	}
+	if($count == 0){ say" $find does not exist!";}
+	close SEARCH;
+}
+
+##################################################
+#
+#	Remove all users with given name
+#
+###################################################
+sub remove(){
+
+	if(!open OLDFILE, '<', "$Filename"){die"($!)";}
+	
+	my @stored = <OLDFILE>;
+
+	if(!open NEWFILE, '>', "$Filename"){die "($!)";}
+	print"Enter the users first that you'd like to delete: ";
+	chomp($Delete = <STDIN>);
+	
+	foreach(@stored)
+	{	
+		print NEWFILE "$_" unless ($_ =~ /$Delete/i);
+	}
+	close OLDFILE;
+	close NEWFILE;
+	say"$Delete has been removed!!";
+}
